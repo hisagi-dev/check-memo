@@ -62,7 +62,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
 
   bool get allChecked => activeItems.isNotEmpty && activeItems.every((i) => i.isChecked);
   
-  // ストック側ですべて選択されているかどうか
   bool get allCompletedChecked => completedItems.isNotEmpty && completedItems.every((i) => i.isChecked);
 
   int get completedCount => completedItems.length;
@@ -93,7 +92,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ストック側のすべて選択切り替え
   void toggleAllCompletedCheck(bool? isChecked) {
     final value = isChecked ?? false;
     for (var item in completedItems) {
@@ -130,7 +128,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ストック内のアイテムを一括でリストに戻す
   void uncompleteAllCompleted() {
     for (var item in completedItems) {
       item.isCompleted = false;
@@ -138,6 +135,30 @@ class ShoppingMemoViewModel extends ChangeNotifier {
         item.isChecked = false;
       }
     }
+    notifyListeners();
+  }
+
+  // ★ リスト（未完了）の並べ替えを反映
+  void reorderActiveItems(int oldIndex, int newIndex) {
+    final list = activeItems;
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    memoDoc.items = [...list, ...completedItems];
+    notifyListeners();
+  }
+
+  // ★ ストック（完了済み）の並べ替えを反映
+  void reorderCompletedItems(int oldIndex, int newIndex) {
+    final list = completedItems;
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    memoDoc.items = [...activeItems, ...list];
     notifyListeners();
   }
 }

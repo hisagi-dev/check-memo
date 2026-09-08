@@ -112,11 +112,16 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                       style: TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   )
-                : ListView.builder(
+                : ReorderableListView.builder(
+                    buildDefaultDragHandles: false, // 標準ハンドルを非表示にし、自前の1個のハンドルを使用
                     itemCount: activeItems.length,
+                    onReorder: (oldIndex, newIndex) {
+                      _viewModel.reorderActiveItems(oldIndex, newIndex);
+                    },
                     itemBuilder: (context, index) {
                       final item = activeItems[index];
                       return Card(
+                        key: ValueKey(item),
                         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         child: ListTile(
                           leading: Checkbox(
@@ -151,6 +156,14 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                               IconButton(
                                 icon: const Icon(Icons.delete_outline, size: 20),
                                 onPressed: () => _viewModel.deleteItem(item),
+                              ),
+                              // 1個のドラッグハンドル
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(4.0),
+                                  child: Icon(Icons.drag_handle, color: Colors.grey),
+                                ),
                               ),
                             ],
                           ),
@@ -244,7 +257,6 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                           ),
                         ],
                       ),
-                      // ストック側の一括操作バー
                       if (completedItems.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -281,12 +293,17 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                       Expanded(
                         child: completedItems.isEmpty
                             ? const Center(child: Text('アイテムはありません'))
-                            : ListView.builder(
-                                controller: scrollController,
+                            : ReorderableListView.builder(
+                                buildDefaultDragHandles: false, // ストック側も標準ハンドルをオフ
                                 itemCount: completedItems.length,
+                                onReorder: (oldIndex, newIndex) {
+                                  _viewModel.reorderCompletedItems(oldIndex, newIndex);
+                                  setModalState(() {});
+                                },
                                 itemBuilder: (context, index) {
                                   final item = completedItems[index];
                                   return ListTile(
+                                    key: ValueKey(item),
                                     leading: Checkbox(
                                       value: item.isChecked,
                                       onChanged: (val) {
@@ -319,6 +336,14 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                                             _viewModel.deleteItem(item);
                                             setModalState(() {});
                                           },
+                                        ),
+                                        // ストック側の1個のドラッグハンドル
+                                        ReorderableDragStartListener(
+                                          index: index,
+                                          child: const Padding(
+                                            padding: EdgeInsets.all(4.0),
+                                            child: Icon(Icons.drag_handle, color: Colors.grey),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -384,10 +409,7 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                     onChanged: followGlobal
                         ? null
                         : (val) {
-                            setTabStateIfMounted() {
-                              setDialogState(() => keep = val);
-                            }
-                            setTabStateIfMounted();
+                            setDialogState(() => keep = val);
                             _viewModel.updateCustomSettingField(keepCheckStateOnMove: val);
                           },
                   ),
