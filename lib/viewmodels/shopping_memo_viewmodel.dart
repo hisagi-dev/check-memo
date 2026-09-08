@@ -5,28 +5,23 @@ import 'home_viewmodel.dart';
 
 class ShoppingMemoViewModel extends ChangeNotifier {
   final MemoDocument memoDoc;
-  final HomeViewModel homeViewModel; // 全体設定を参照するため保持
+  final HomeViewModel homeViewModel;
   final TextEditingController textController = TextEditingController();
 
   ShoppingMemoViewModel({required this.memoDoc, required this.homeViewModel});
 
-  // 現在有効な設定を返す（個別設定があればそれを、なければ全体設定を返す）
   MemoSettings get effectiveSettings => memoDoc.customSettings ?? homeViewModel.globalSettings;
 
   bool get strikeThroughOnCompleted => effectiveSettings.strikeThroughOnCompleted;
   bool get keepCheckStateOnMove => effectiveSettings.keepCheckStateOnMove;
   bool get moveUncheckedOnComplete => effectiveSettings.moveUncheckedOnComplete;
 
-  // このメモが独自の設定を持っているか（オーバーライド中か）
   bool get isCustomSettings => memoDoc.customSettings != null;
 
-  // 「全体設定に連動させる」チェックボックスが変更されたとき
   void setFollowGlobalSettings(bool followGlobal) {
     if (followGlobal) {
-      // 個別設定を破棄して全体設定に連動させる
       memoDoc.customSettings = null;
     } else {
-      // 現在の全体設定をコピーして個別設定として保持（オーバーライド開始）
       memoDoc.customSettings = MemoSettings(
         strikeThroughOnCompleted: homeViewModel.globalSettings.strikeThroughOnCompleted,
         keepCheckStateOnMove: homeViewModel.globalSettings.keepCheckStateOnMove,
@@ -36,7 +31,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 個別設定の各項目を変更する（自動的にオーバーライド状態になる）
   void updateCustomSettingField({
     bool? strikeThroughOnCompleted,
     bool? keepCheckStateOnMove,
@@ -67,6 +61,10 @@ class ShoppingMemoViewModel extends ChangeNotifier {
   List<MemoItem> get completedItems => memoDoc.items.where((item) => item.isCompleted).toList();
 
   bool get allChecked => activeItems.isNotEmpty && activeItems.every((i) => i.isChecked);
+  
+  // ストック側ですべて選択されているかどうか
+  bool get allCompletedChecked => completedItems.isNotEmpty && completedItems.every((i) => i.isChecked);
+
   int get completedCount => completedItems.length;
   String get memoTitle => memoDoc.title;
 
@@ -95,19 +93,23 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 1個のアイテムを完了（ストックへ移動）させる
+  // ストック側のすべて選択切り替え
+  void toggleAllCompletedCheck(bool? isChecked) {
+    final value = isChecked ?? false;
+    for (var item in completedItems) {
+      item.isChecked = value;
+    }
+    notifyListeners();
+  }
+
   void completeItem(MemoItem item) {
     item.isCompleted = true;
-    
-    // 設定がOFF（デフォルト）の場合はチェックを強制的に外す
-    // 設定がONの場合は、現在のチェック状態をそのまま維持する
     if (!keepCheckStateOnMove) {
       item.isChecked = false;
     }
     notifyListeners();
   }
 
-// 一括完了（ストックへ移動）
   void completeAllActive() {
     for (var item in activeItems) {
       if (moveUncheckedOnComplete || item.isChecked) {
@@ -120,14 +122,21 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ストックから元のリストに戻す
   void uncompleteItem(MemoItem item) {
     item.isCompleted = false;
-    
-    // 設定がOFFの場合は、戻すときにもチェックを外す
-    // 設定がONの場合は、ストックにあったときのチェック状態を維持して戻す
     if (!keepCheckStateOnMove) {
       item.isChecked = false;
+    }
+    notifyListeners();
+  }
+
+  // ストック内のアイテムを一括でリストに戻す
+  void uncompleteAllCompleted() {
+    for (var item in completedItems) {
+      item.isCompleted = false;
+      if (!keepCheckStateOnMove) {
+        item.isChecked = false;
+      }
     }
     notifyListeners();
   }

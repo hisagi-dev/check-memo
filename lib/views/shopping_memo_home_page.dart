@@ -235,7 +235,7 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            '完了したアイテム（連続で戻せます）',
+                            '完了したアイテム（ストック）',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           IconButton(
@@ -244,6 +244,39 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                           ),
                         ],
                       ),
+                      // ストック側の一括操作バー
+                      if (completedItems.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _viewModel.allCompletedChecked,
+                                    onChanged: (val) {
+                                      _viewModel.toggleAllCompletedCheck(val);
+                                      setModalState(() {});
+                                    },
+                                  ),
+                                  const Text('すべて選択', style: TextStyle(fontSize: 14)),
+                                ],
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  _viewModel.uncompleteAllCompleted();
+                                  setModalState(() {});
+                                },
+                                icon: const Icon(Icons.unarchive_outlined, size: 18),
+                                label: const Text('一括でリストに戻す'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       const Divider(),
                       Expanded(
                         child: completedItems.isEmpty
@@ -254,7 +287,6 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                                 itemBuilder: (context, index) {
                                   final item = completedItems[index];
                                   return ListTile(
-                                    // ストック内でもチェック状態がわかるようにチェックボックスを配置
                                     leading: Checkbox(
                                       value: item.isChecked,
                                       onChanged: (val) {
@@ -265,11 +297,9 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                                     title: Text(
                                       item.text,
                                       style: TextStyle(
-                                        // 設定がONかつアイテムにチェックがある場合のみ取り消し線を引く
                                         decoration: (_viewModel.strikeThroughOnCompleted && item.isChecked)
                                             ? TextDecoration.lineThrough
                                             : TextDecoration.none,
-                                        // チェックの有無に応じて色を変化させる（チェックありはグレー、なしは黒）
                                         color: item.isChecked ? Colors.grey : Colors.black87,
                                       ),
                                     ),
@@ -354,7 +384,10 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                     onChanged: followGlobal
                         ? null
                         : (val) {
-                            setDialogState(() => keep = val);
+                            setTabStateIfMounted() {
+                              setDialogState(() => keep = val);
+                            }
+                            setTabStateIfMounted();
                             _viewModel.updateCustomSettingField(keepCheckStateOnMove: val);
                           },
                   ),
