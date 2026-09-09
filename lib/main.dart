@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // google_fontsのインポート
+import 'package:google_fonts/google_fonts.dart';
 import 'views/home_screen.dart';
 
 void main() {
@@ -16,8 +16,6 @@ class ShoppingMemoApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
         useMaterial3: true,
-        // ここで google_fonts を使ってアプリ全体のデフォルトフォントを設定します
-        // オーソドックスで読みやすい 'Noto Sans JP' を指定しています
         textTheme: GoogleFonts.notoSansJpTextTheme(
           ThemeData.light().textTheme,
         ),

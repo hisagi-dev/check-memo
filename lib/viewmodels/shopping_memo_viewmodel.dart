@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/memo_document.dart';
+import '../models/memo_item.dart';
 import 'home_viewmodel.dart';
 
 class ShoppingMemoViewModel extends ChangeNotifier {
@@ -61,7 +62,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
   List<MemoItem> get completedItems => memoDoc.items.where((item) => item.isCompleted).toList();
 
   bool get allChecked => activeItems.isNotEmpty && activeItems.every((i) => i.isChecked);
-  
   bool get allCompletedChecked => completedItems.isNotEmpty && completedItems.every((i) => i.isChecked);
 
   int get completedCount => completedItems.length;
@@ -138,7 +138,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ★ リスト（未完了）の並べ替えを反映
   void reorderActiveItems(int oldIndex, int newIndex) {
     final list = activeItems;
     if (oldIndex < newIndex) {
@@ -150,7 +149,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ★ ストック（完了済み）の並べ替えを反映
   void reorderCompletedItems(int oldIndex, int newIndex) {
     final list = completedItems;
     if (oldIndex < newIndex) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../models/memo_document.dart';
-import 'shopping_memo_home_page.dart';
+import 'shopping_memo/shopping_memo_home_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,9 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel.addListener(() {
-      setState(() {});
-    });
+    _viewModel.addListener(() => setState(() {}));
   }
 
   @override
@@ -27,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // 全体設定ダイアログ
   void _showGlobalSettingsDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -188,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         MaterialPageRoute(
                           builder: (context) => ShoppingMemoHomePage(
                             memoDoc: doc,
-                            homeViewModel: _viewModel, // 全体設定の参照を渡す
+                            homeViewModel: _viewModel,
                           ),
                         ),
                       );

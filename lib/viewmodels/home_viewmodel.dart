@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import '../models/memo_document.dart';
+import '../models/memo_item.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  // アプリ全体のグローバル設定
   MemoSettings globalSettings = MemoSettings(
     strikeThroughOnCompleted: true,
     keepCheckStateOnMove: false,
@@ -22,7 +22,6 @@ class HomeViewModel extends ChangeNotifier {
 
   List<MemoDocument> get memos => _memos;
 
-  // 全体設定を更新して全メモに通知
   void updateGlobalSettings({
     required bool strikeThroughOnCompleted,
     required bool keepCheckStateOnMove,
