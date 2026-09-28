@@ -47,6 +47,7 @@ class MemoDocument {
   String title;
   List items;
   int? sortOrder;
+  bool isPinned;
   MemoSettings? customSettings;
 
   MemoDocument({
@@ -54,6 +55,7 @@ class MemoDocument {
     required this.title,
     required this.items,
     this.sortOrder,
+    this.isPinned = false,
     this.customSettings,
   });
 
@@ -64,6 +66,7 @@ class MemoDocument {
       'id': id,
       'title': title,
       'sortOrder': sortOrder,
+      'isPinned': isPinned,
       'items': items.map((item) => item.toMap()).toList(),
       'customSettings': customSettings?.toMap(),
     };
@@ -74,6 +77,7 @@ class MemoDocument {
       id: docId,
       title: map['title'] ?? '',
       sortOrder: (map['sortOrder'] as num?)?.toInt(),
+      isPinned: map['isPinned'] as bool? ?? false,
       items:
           (map['items'] as List?)
               ?.map((item) => MemoItem.fromMap(item as Map))

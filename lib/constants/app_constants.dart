@@ -41,6 +41,8 @@ class AppConstants {
   static const String homeTitle = 'マイルーム（メモ一覧）';
   static const String textEmptyHome = 'メモ帳がありません。右下の＋から作成してください。';
   static const String textNoSearchResults = '一致するメモがありません';
+  static const String labelPinnedMemos = 'ピン留め';
+  static const String labelOtherMemos = 'その他';
   static const String textEmptyMemo = 'メモは空です';
   static const String textEmptyCompleted = 'アイテムはありません';
 
@@ -57,6 +59,8 @@ class AppConstants {
   static const String labelBulkRestore = '一括でリストに戻す';
   static const String labelClose = '閉じる';
   static const String labelClearSearch = '検索をクリア';
+  static const String labelPinMemo = 'メモをピン留め';
+  static const String labelUnpinMemo = 'ピン留めを解除';
   static const String labelCancel = 'キャンセル';
   static const String labelCreate = '作成';
   static const String labelSave = '保存';

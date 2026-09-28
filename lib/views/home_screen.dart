@@ -308,37 +308,26 @@ class _HomeScreenState extends State {
               ? const Center(child: Text(AppConstants.textNoSearchResults))
               : LayoutBuilder(
                 builder: (context, constraints) {
-                  final cardWidth = AppConstants.homeMemoCardWidth;
-                  final spacing = AppConstants.gridCrossAxisSpacing;
-                  final horizontalPadding = AppConstants.paddingNormal * 2;
-                  final availableGridWidth =
-                      constraints.maxWidth - horizontalPadding;
-                  final columnCount = ((availableGridWidth + spacing) /
-                          (cardWidth + spacing))
-                      .floor()
-                      .clamp(1, visibleMemos.length);
-                  final gridWidth =
-                      columnCount * cardWidth +
-                      (columnCount - 1) * spacing +
-                      horizontalPadding;
+                  final pinnedMemos =
+                      visibleMemos.where((memo) => memo.isPinned).toList();
+                  final otherMemos =
+                      visibleMemos.where((memo) => !memo.isPinned).toList();
 
-                  return Align(
-                    alignment: Alignment.topCenter,
-                    child: SizedBox(
-                      width: gridWidth,
-                      child: MasonryGridView.count(
-                        padding: const EdgeInsets.all(
-                          AppConstants.paddingNormal,
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildMemoSection(
+                          title: AppConstants.labelPinnedMemos,
+                          memos: pinnedMemos,
+                          availableWidth: constraints.maxWidth,
                         ),
-                        crossAxisCount: columnCount,
-                        mainAxisSpacing: AppConstants.gridMainAxisSpacing,
-                        crossAxisSpacing: spacing,
-                        itemCount: visibleMemos.length,
-                        itemBuilder: (context, index) {
-                          final doc = visibleMemos[index];
-                          return _buildMemoCard(doc, cardWidth);
-                        },
-                      ),
+                        _buildMemoSection(
+                          title: AppConstants.labelOtherMemos,
+                          memos: otherMemos,
+                          availableWidth: constraints.maxWidth,
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -346,6 +335,67 @@ class _HomeScreenState extends State {
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildMemoSection({
+    required String title,
+    required List<MemoDocument> memos,
+    required double availableWidth,
+  }) {
+    if (memos.isEmpty) return const SizedBox.shrink();
+
+    final cardWidth = AppConstants.homeMemoCardWidth;
+    final spacing = AppConstants.gridCrossAxisSpacing;
+    final horizontalPadding = AppConstants.paddingNormal * 2;
+    final availableGridWidth = availableWidth - horizontalPadding;
+    final columnCount = ((availableGridWidth + spacing) / (cardWidth + spacing))
+        .floor()
+        .clamp(1, memos.length);
+    final gridWidth =
+        columnCount * cardWidth +
+        (columnCount - 1) * spacing +
+        horizontalPadding;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppConstants.gridMainAxisSpacing),
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+          width: gridWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppConstants.paddingNormal,
+                  AppConstants.paddingNormal,
+                  AppConstants.paddingNormal,
+                  AppConstants.paddingSmall,
+                ),
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              MasonryGridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.paddingNormal,
+                ),
+                crossAxisCount: columnCount,
+                mainAxisSpacing: AppConstants.gridMainAxisSpacing,
+                crossAxisSpacing: spacing,
+                itemCount: memos.length,
+                itemBuilder: (context, index) {
+                  return _buildMemoCard(memos[index], cardWidth);
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -473,6 +523,20 @@ class _HomeScreenState extends State {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          if (doc.isPinned)
+                            const Padding(
+                              padding: EdgeInsets.only(
+                                right: AppConstants.paddingSmall,
+                              ),
+                              child: Tooltip(
+                                message: AppConstants.labelUnpinMemo,
+                                child: Icon(
+                                  Icons.push_pin,
+                                  size: AppConstants.iconSizeSmall,
+                                  color: AppConstants.iconColorGrey,
+                                ),
+                              ),
+                            ),
                           PopupMenuButton<String>(
                             icon: const Icon(
                               Icons.more_vert,
@@ -483,6 +547,8 @@ class _HomeScreenState extends State {
                                 _showRenameDialog(doc);
                               } else if (value == 'delete') {
                                 _viewModel.deleteMemoDocument(doc);
+                              } else if (value == 'pin' || value == 'unpin') {
+                                _toggleMemoPin(doc);
                               }
                             },
                             itemBuilder:
@@ -494,6 +560,14 @@ class _HomeScreenState extends State {
                                   const PopupMenuItem(
                                     value: 'delete',
                                     child: Text(AppConstants.labelDelete),
+                                  ),
+                                  PopupMenuItem(
+                                    value: doc.isPinned ? 'unpin' : 'pin',
+                                    child: Text(
+                                      doc.isPinned
+                                          ? AppConstants.labelUnpinMemo
+                                          : AppConstants.labelPinMemo,
+                                    ),
                                   ),
                                 ],
                           ),
@@ -508,5 +582,16 @@ class _HomeScreenState extends State {
         );
       },
     );
+  }
+
+  Future<void> _toggleMemoPin(MemoDocument memo) async {
+    try {
+      await _viewModel.toggleMemoPin(memo);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ピン留めを保存できませんでした')));
+    }
   }
 }

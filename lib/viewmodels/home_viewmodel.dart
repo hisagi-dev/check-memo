@@ -35,6 +35,10 @@ class HomeViewModel extends ChangeNotifier {
       (memoList) {
         final indexedMemos = memoList.asMap().entries.toList();
         indexedMemos.sort((first, second) {
+            final pinComparison = (second.value.isPinned ? 1 : 0)
+                .compareTo(first.value.isPinned ? 1 : 0);
+          if (pinComparison != 0) return pinComparison;
+
           final firstOrder = first.value.sortOrder ?? first.key;
           final secondOrder = second.value.sortOrder ?? second.key;
           final orderComparison = firstOrder.compareTo(secondOrder);
@@ -76,6 +80,33 @@ class HomeViewModel extends ChangeNotifier {
     if (_searchQuery == query) return;
     _searchQuery = query;
     notifyListeners();
+  }
+
+  Future<void> toggleMemoPin(MemoDocument memo) async {
+    final previousPinnedState = memo.isPinned;
+    final previousMemos = List<MemoDocument>.from(_memos);
+    memo.isPinned = !previousPinnedState;
+    final indexedMemos = _memos.asMap().entries.toList();
+    indexedMemos.sort((first, second) {
+            final pinComparison = (second.value.isPinned ? 1 : 0)
+                .compareTo(first.value.isPinned ? 1 : 0);
+      if (pinComparison != 0) return pinComparison;
+      final firstOrder = first.value.sortOrder ?? first.key;
+      final secondOrder = second.value.sortOrder ?? second.key;
+      return firstOrder.compareTo(secondOrder);
+    });
+    final updatedMemos = indexedMemos.map((entry) => entry.value).toList();
+    _memos = updatedMemos;
+    notifyListeners();
+
+    try {
+      await _repository.updateMemoDocument(memo);
+    } catch (_) {
+      memo.isPinned = previousPinnedState;
+      _memos = previousMemos;
+      notifyListeners();
+      rethrow;
+    }
   }
 
   Future<MemoDocument> addMemoDocument(String title) async {
