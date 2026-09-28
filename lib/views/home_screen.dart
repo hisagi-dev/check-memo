@@ -102,7 +102,9 @@ class _HomeScreenState extends State {
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: AppConstants.hintMemoTitle),
+            decoration: const InputDecoration(
+              hintText: AppConstants.hintMemoTitle,
+            ),
           ),
           actions: [
             TextButton(
@@ -132,7 +134,9 @@ class _HomeScreenState extends State {
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: AppConstants.hintNewMemoTitle),
+            decoration: const InputDecoration(
+              hintText: AppConstants.hintNewMemoTitle,
+            ),
           ),
           actions: [
             TextButton(
@@ -166,110 +170,132 @@ class _HomeScreenState extends State {
           ),
         ],
       ),
-      body: _viewModel.memos.isEmpty
-          ? const Center(child: Text(AppConstants.textEmptyHome))
-          : GridView.builder(
-              padding: const EdgeInsets.all(AppConstants.paddingNormal),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: AppConstants.gridCrossAxisSpacing,
-                mainAxisSpacing: AppConstants.gridMainAxisSpacing,
-                childAspectRatio: AppConstants.gridChildAspectRatio,
-              ),
-              itemCount: _viewModel.memos.length,
-              itemBuilder: (context, index) {
-                final doc = _viewModel.memos[index];
-                return Card(
-                  color: AppConstants.memoCardColor,
-                  elevation: AppConstants.cardElevation,
-                  child: InkWell(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ShoppingMemoHomePage(
-                            memoDoc: doc,
-                            globalSettings: _viewModel.globalSettings,
-                          ),
-                        ),
-                      );
-                      setState(() {});
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppConstants.paddingNormal),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  doc.title,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: AppConstants.fontSizeNormal,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              PopupMenuButton(
-                                icon: const Icon(
-                                  Icons.more_vert,
-                                  size: AppConstants.iconSizeSmall,
-                                ),
-                                onSelected: (value) {
-                                  if (value == 'rename') {
-                                    _showRenameDialog(doc);
-                                  } else if (value == 'delete') {
-                                    _viewModel.deleteMemoDocument(doc);
-                                  }
+      body:
+          _viewModel.memos.isEmpty
+              ? const Center(child: Text(AppConstants.textEmptyHome))
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppConstants.paddingNormal),
+                  child: Wrap(
+                    spacing: AppConstants.gridCrossAxisSpacing,
+                    runSpacing: AppConstants.gridMainAxisSpacing,
+                    crossAxisAlignment: WrapCrossAlignment.start,
+                    children:
+                        _viewModel.memos.map<Widget>((doc) {
+                          return SizedBox(
+                            width: AppConstants.homeMemoCardWidth,
+                            child: Card(
+                              margin: EdgeInsets.zero,
+                              color: AppConstants.memoCardColor,
+                              elevation: AppConstants.cardElevation,
+                              child: InkWell(
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => ShoppingMemoHomePage(
+                                            memoDoc: doc,
+                                            globalSettings:
+                                                _viewModel.globalSettings,
+                                          ),
+                                    ),
+                                  );
+                                  setState(() {});
                                 },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'rename',
-                                    child: Text(AppConstants.labelRename),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(
+                                    AppConstants.paddingNormal,
                                   ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Text(AppConstants.labelDelete),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              doc.title,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize:
+                                                    AppConstants.fontSizeNormal,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          PopupMenuButton(
+                                            icon: const Icon(
+                                              Icons.more_vert,
+                                              size: AppConstants.iconSizeSmall,
+                                            ),
+                                            onSelected: (value) {
+                                              if (value == 'rename') {
+                                                _showRenameDialog(doc);
+                                              } else if (value == 'delete') {
+                                                _viewModel.deleteMemoDocument(
+                                                  doc,
+                                                );
+                                              }
+                                            },
+                                            itemBuilder:
+                                                (context) => [
+                                                  const PopupMenuItem(
+                                                    value: 'rename',
+                                                    child: Text(
+                                                      AppConstants.labelRename,
+                                                    ),
+                                                  ),
+                                                  const PopupMenuItem(
+                                                    value: 'delete',
+                                                    child: Text(
+                                                      AppConstants.labelDelete,
+                                                    ),
+                                                  ),
+                                                ],
+                                          ),
+                                        ],
+                                      ),
+                                      const Divider(),
+                                      ...doc.items.map<Widget>((item) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: AppConstants.paddingSmall,
+                                          ),
+                                          child: Text(
+                                            '• ${item.text}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color:
+                                                  item.isCompleted
+                                                      ? AppConstants
+                                                          .textColorGrey
+                                                      : AppConstants
+                                                          .textColorDark,
+                                              decoration:
+                                                  item.isChecked
+                                                      ? TextDecoration
+                                                          .lineThrough
+                                                      : null,
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ],
-                          ),
-                          const Divider(),
-                          Expanded(
-                            child: ListView(
-                              physics: const NeverScrollableScrollPhysics(),
-                              // map に  を明示して List に変換されるように修正
-                              children: doc.items
-                                  .take(AppConstants.homePreviewItemCount)
-                                  .map<Widget>((item) {
-                                return Text(
-                                  '• ${item.text}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: item.isCompleted
-                                        ? AppConstants.textColorGrey
-                                        : AppConstants.textColorDark,
-                                    decoration: item.isChecked
-                                        ? TextDecoration.lineThrough
-                                        : null,
-                                  ),
-                                );
-                              }).toList(),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
+                          );
+                        }).toList(),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),

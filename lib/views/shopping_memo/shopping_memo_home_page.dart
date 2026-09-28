@@ -159,7 +159,9 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                           title: Text(
                             item.text,
                             style: TextStyle(
-                              decoration: item.isChecked ? TextDecoration.lineThrough : TextDecoration.none,
+                              decoration: (_viewModel.strikeThroughOnCompleted && item.isChecked)
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
                               color: item.isChecked ? AppConstants.textColorGrey : Colors.black,
                             ),
                           ),

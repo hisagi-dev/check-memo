@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // --- 数値定数 ---
-  static const int homePreviewItemCount = 3;
+  static const double homeMemoCardWidth = 178.0;
 
   // --- サイズ・レイアウト定数 ---
   static const double gridCrossAxisSpacing = 10.0;
@@ -64,7 +64,8 @@ class AppConstants {
   static const String dialogTitleMemoSettings = 'このメモの設定';
 
   static const String settingFollowGlobalTitle = '全体のデフォルト設定に従う';
-  static const String settingFollowGlobalSubtitle = 'ONにするとホーム画面の全体設定が自動で反映されます';
+  static const String settingFollowGlobalSubtitle =
+      'ONにするとホーム画面の全体設定が自動で反映されます';
   static const String settingStrikeThroughTitle = '完了済みに取り消し線を引く';
   static const String settingKeepCheckTitle = '移動時にチェック状態を維持する';
   static const String settingMoveUncheckedTitle = '未チェックも一括完了で移動する';
