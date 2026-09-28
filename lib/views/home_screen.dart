@@ -304,152 +304,139 @@ class _HomeScreenState extends State {
         }
       },
       builder: (context, candidateData, rejectedData) {
-        return Card(
-          margin: EdgeInsets.zero,
-          color: AppConstants.memoCardColor,
-          elevation: AppConstants.cardElevation,
-          shape:
-              candidateData.isNotEmpty
-                  ? RoundedRectangleBorder(
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2,
+        return LongPressDraggable<MemoDocument>(
+          data: doc,
+          feedback: Material(
+            color: Colors.transparent,
+            child: SizedBox(
+              width: cardWidth,
+              child: Card(
+                color: AppConstants.memoCardColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppConstants.paddingNormal),
+                  child: Text(
+                    doc.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: AppConstants.fontSizeNormal,
                     ),
-                    borderRadius: BorderRadius.circular(
-                      AppConstants.borderRadiusSmall,
-                    ),
-                  )
-                  : null,
-          child: SizedBox(
-            width: cardWidth,
-            child: InkWell(
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => ShoppingMemoHomePage(
-                          memoDoc: doc,
-                          globalSettings: _viewModel.globalSettings,
-                        ),
                   ),
-                );
-                if (mounted) setState(() {});
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.paddingNormal),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            doc.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: AppConstants.fontSizeNormal,
-                            ),
+                ),
+              ),
+            ),
+          ),
+          child: Card(
+            margin: EdgeInsets.zero,
+            color: AppConstants.memoCardColor,
+            elevation: AppConstants.cardElevation,
+            shape:
+                candidateData.isNotEmpty
+                    ? RoundedRectangleBorder(
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.borderRadiusSmall,
+                      ),
+                    )
+                    : null,
+            child: SizedBox(
+              width: cardWidth,
+              child: InkWell(
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => ShoppingMemoHomePage(
+                            memoDoc: doc,
+                            globalSettings: _viewModel.globalSettings,
                           ),
-                        ),
-                      ],
                     ),
-                    const Divider(),
-                    ...previewItems.map<Widget>((item) {
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppConstants.paddingSmall,
-                        ),
-                        child: Text(
-                          '• ${item.text}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color:
-                                item.isCompleted
-                                    ? AppConstants.textColorGrey
-                                    : AppConstants.textColorDark,
-                            decoration:
-                                item.isChecked
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                          ),
-                        ),
-                      );
-                    }),
-                    if (hiddenItemCount > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppConstants.paddingSmall,
-                        ),
-                        child: Text(
-                          'ほか $hiddenItemCount 件',
-                          style: const TextStyle(
-                            color: AppConstants.textColorGrey,
-                            fontSize: AppConstants.fontSizeSmall,
-                          ),
+                  );
+                  if (mounted) setState(() {});
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(AppConstants.paddingNormal),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        doc.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: AppConstants.fontSizeNormal,
                         ),
                       ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Draggable<MemoDocument>(
-                          data: doc,
-                          feedback: Material(
-                            color: Colors.transparent,
-                            child: SizedBox(
-                              width: cardWidth,
-                              child: Card(
-                                color: AppConstants.memoCardColor,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(
-                                    AppConstants.paddingNormal,
+                      const Divider(),
+                      ...previewItems.map<Widget>((item) {
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: AppConstants.paddingSmall,
+                          ),
+                          child: Text(
+                            '• ${item.text}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color:
+                                  item.isCompleted
+                                      ? AppConstants.textColorGrey
+                                      : AppConstants.textColorDark,
+                              decoration:
+                                  item.isChecked
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                            ),
+                          ),
+                        );
+                      }),
+                      if (hiddenItemCount > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: AppConstants.paddingSmall,
+                          ),
+                          child: Text(
+                            'ほか $hiddenItemCount 件',
+                            style: const TextStyle(
+                              color: AppConstants.textColorGrey,
+                              fontSize: AppConstants.fontSizeSmall,
+                            ),
+                          ),
+                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          PopupMenuButton<String>(
+                            icon: const Icon(
+                              Icons.more_vert,
+                              size: AppConstants.iconSizeSmall,
+                            ),
+                            onSelected: (value) {
+                              if (value == 'rename') {
+                                _showRenameDialog(doc);
+                              } else if (value == 'delete') {
+                                _viewModel.deleteMemoDocument(doc);
+                              }
+                            },
+                            itemBuilder:
+                                (context) => [
+                                  const PopupMenuItem(
+                                    value: 'rename',
+                                    child: Text(AppConstants.labelRename),
                                   ),
-                                  child: Text(doc.title),
-                                ),
-                              ),
-                            ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text(AppConstants.labelDelete),
+                                  ),
+                                ],
                           ),
-                          childWhenDragging: const Icon(
-                            Icons.drag_indicator,
-                            color: AppConstants.iconColorGrey,
-                          ),
-                          child: const Tooltip(
-                            message: 'ドラッグして並べ替え',
-                            child: Icon(
-                              Icons.drag_indicator,
-                              color: AppConstants.iconColorGrey,
-                            ),
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: const Icon(
-                            Icons.more_vert,
-                            size: AppConstants.iconSizeSmall,
-                          ),
-                          onSelected: (value) {
-                            if (value == 'rename') {
-                              _showRenameDialog(doc);
-                            } else if (value == 'delete') {
-                              _viewModel.deleteMemoDocument(doc);
-                            }
-                          },
-                          itemBuilder:
-                              (context) => [
-                                const PopupMenuItem(
-                                  value: 'rename',
-                                  child: Text(AppConstants.labelRename),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text(AppConstants.labelDelete),
-                                ),
-                              ],
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
