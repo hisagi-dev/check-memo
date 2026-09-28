@@ -227,20 +227,21 @@ class _HomeScreenState extends State {
           ),
         ],
       ),
-      body: _viewModel.loadError != null
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                child: Text(
-                  'Firestoreからメモを読み込めませんでした。\n\n'
-                  '${_viewModel.loadError}\n\n'
-                  'Firebase ConsoleでFirestore Databaseを作成し、'
-                  'アプリと同じプロジェクトを選択してください。',
-                  textAlign: TextAlign.center,
+      body:
+          _viewModel.loadError != null
+              ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                  child: Text(
+                    'Firestoreからメモを読み込めませんでした。\n\n'
+                    '${_viewModel.loadError}\n\n'
+                    'Firebase ConsoleでFirestore Databaseを作成し、'
+                    'アプリと同じプロジェクトを選択してください。',
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-            )
-          : _viewModel.memos.isEmpty
+              )
+              : _viewModel.memos.isEmpty
               ? const Center(child: Text(AppConstants.textEmptyHome))
               : LayoutBuilder(
                 builder: (context, constraints) {
@@ -336,8 +337,6 @@ class _HomeScreenState extends State {
                               fontWeight: FontWeight.bold,
                               fontSize: AppConstants.fontSizeNormal,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Draggable<MemoDocument>(
@@ -352,11 +351,7 @@ class _HomeScreenState extends State {
                                   padding: const EdgeInsets.all(
                                     AppConstants.paddingNormal,
                                   ),
-                                  child: Text(
-                                    doc.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                  child: Text(doc.title),
                                 ),
                               ),
                             ),
