@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../constants/app_constants.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../models/memo_document.dart';
@@ -97,31 +100,69 @@ class _HomeScreenState extends State {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text(AppConstants.dialogTitleNewMemo),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: AppConstants.hintMemoTitle,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(AppConstants.labelCancel),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _viewModel.addMemoDocument(controller.text);
-                Navigator.pop(context);
-              },
-              child: const Text(AppConstants.labelCreate),
-            ),
-          ],
+        String? errorMessage;
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: const Text(AppConstants.dialogTitleNewMemo),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    onChanged: (_) => setDialogState(() => errorMessage = null),
+                    decoration: const InputDecoration(
+                      hintText: AppConstants.hintMemoTitle,
+                    ),
+                  ),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: AppConstants.paddingSmall),
+                    Text(
+                      errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text(AppConstants.labelCancel),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final title = controller.text.trim();
+                    if (title.isEmpty) {
+                      setDialogState(() => errorMessage = 'タイトルを入力してください');
+                      return;
+                    }
+
+                    Navigator.pop(dialogContext);
+                    unawaited(_createMemo(title));
+                  },
+                  child: const Text(AppConstants.labelCreate),
+                ),
+              ],
+            );
+          },
         );
       },
     );
+  }
+
+  Future<void> _createMemo(String title) async {
+    try {
+      await _viewModel.addMemoDocument(title);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('作成できませんでした。通信状態を確認してください。')),
+      );
+    }
   }
 
   void _showRenameDialog(MemoDocument doc) {
@@ -173,133 +214,206 @@ class _HomeScreenState extends State {
       body:
           _viewModel.memos.isEmpty
               ? const Center(child: Text(AppConstants.textEmptyHome))
-              : SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppConstants.paddingNormal),
-                  child: Wrap(
-                    spacing: AppConstants.gridCrossAxisSpacing,
-                    runSpacing: AppConstants.gridMainAxisSpacing,
-                    crossAxisAlignment: WrapCrossAlignment.start,
-                    children:
-                        _viewModel.memos.map<Widget>((doc) {
-                          return SizedBox(
-                            width: AppConstants.homeMemoCardWidth,
-                            child: Card(
-                              margin: EdgeInsets.zero,
-                              color: AppConstants.memoCardColor,
-                              elevation: AppConstants.cardElevation,
-                              child: InkWell(
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => ShoppingMemoHomePage(
-                                            memoDoc: doc,
-                                            globalSettings:
-                                                _viewModel.globalSettings,
-                                          ),
-                                    ),
-                                  );
-                                  setState(() {});
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(
-                                    AppConstants.paddingNormal,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              doc.title,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    AppConstants.fontSizeNormal,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          PopupMenuButton(
-                                            icon: const Icon(
-                                              Icons.more_vert,
-                                              size: AppConstants.iconSizeSmall,
-                                            ),
-                                            onSelected: (value) {
-                                              if (value == 'rename') {
-                                                _showRenameDialog(doc);
-                                              } else if (value == 'delete') {
-                                                _viewModel.deleteMemoDocument(
-                                                  doc,
-                                                );
-                                              }
-                                            },
-                                            itemBuilder:
-                                                (context) => [
-                                                  const PopupMenuItem(
-                                                    value: 'rename',
-                                                    child: Text(
-                                                      AppConstants.labelRename,
-                                                    ),
-                                                  ),
-                                                  const PopupMenuItem(
-                                                    value: 'delete',
-                                                    child: Text(
-                                                      AppConstants.labelDelete,
-                                                    ),
-                                                  ),
-                                                ],
-                                          ),
-                                        ],
-                                      ),
-                                      const Divider(),
-                                      ...doc.items.map<Widget>((item) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: AppConstants.paddingSmall,
-                                          ),
-                                          child: Text(
-                                            '• ${item.text}',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color:
-                                                  item.isCompleted
-                                                      ? AppConstants
-                                                          .textColorGrey
-                                                      : AppConstants
-                                                          .textColorDark,
-                                              decoration:
-                                                  item.isChecked
-                                                      ? TextDecoration
-                                                          .lineThrough
-                                                      : null,
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                  ),
-                ),
+              : LayoutBuilder(
+                builder: (context, constraints) {
+                  final cardWidth = AppConstants.homeMemoCardWidth;
+                  final spacing = AppConstants.gridCrossAxisSpacing;
+                  final columnCount = ((constraints.maxWidth + spacing) /
+                          (cardWidth + spacing))
+                      .floor()
+                      .clamp(1, _viewModel.memos.length);
+
+                  return MasonryGridView.count(
+                    padding: const EdgeInsets.all(AppConstants.paddingNormal),
+                    crossAxisCount: columnCount,
+                    mainAxisSpacing: AppConstants.gridMainAxisSpacing,
+                    crossAxisSpacing: spacing,
+                    itemCount: _viewModel.memos.length,
+                    itemBuilder: (context, index) {
+                      final doc = _viewModel.memos[index];
+                      return _buildMemoCard(doc, cardWidth);
+                    },
+                  );
+                },
               ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget _buildMemoCard(MemoDocument doc, double cardWidth) {
+    final previewItems = doc.items.take(
+      AppConstants.homeMemoMaxPreviewItemCount,
+    );
+    final hiddenItemCount = doc.items.length - previewItems.length;
+
+    return DragTarget<MemoDocument>(
+      onAcceptWithDetails: (details) async {
+        try {
+          await _viewModel.reorderMemos(details.data, doc);
+        } catch (_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('メモの順番を保存できませんでした')));
+        }
+      },
+      builder: (context, candidateData, rejectedData) {
+        return Card(
+          margin: EdgeInsets.zero,
+          color: AppConstants.memoCardColor,
+          elevation: AppConstants.cardElevation,
+          shape:
+              candidateData.isNotEmpty
+                  ? RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.borderRadiusSmall,
+                    ),
+                  )
+                  : null,
+          child: SizedBox(
+            width: cardWidth,
+            child: InkWell(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => ShoppingMemoHomePage(
+                          memoDoc: doc,
+                          globalSettings: _viewModel.globalSettings,
+                        ),
+                  ),
+                );
+                if (mounted) setState(() {});
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.paddingNormal),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            doc.title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: AppConstants.fontSizeNormal,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Draggable<MemoDocument>(
+                          data: doc,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: SizedBox(
+                              width: cardWidth,
+                              child: Card(
+                                color: AppConstants.memoCardColor,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(
+                                    AppConstants.paddingNormal,
+                                  ),
+                                  child: Text(
+                                    doc.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          childWhenDragging: const Icon(
+                            Icons.drag_indicator,
+                            color: AppConstants.iconColorGrey,
+                          ),
+                          child: const Tooltip(
+                            message: 'ドラッグして並べ替え',
+                            child: Icon(
+                              Icons.drag_indicator,
+                              color: AppConstants.iconColorGrey,
+                            ),
+                          ),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: const Icon(
+                            Icons.more_vert,
+                            size: AppConstants.iconSizeSmall,
+                          ),
+                          onSelected: (value) {
+                            if (value == 'rename') {
+                              _showRenameDialog(doc);
+                            } else if (value == 'delete') {
+                              _viewModel.deleteMemoDocument(doc);
+                            }
+                          },
+                          itemBuilder:
+                              (context) => [
+                                const PopupMenuItem(
+                                  value: 'rename',
+                                  child: Text(AppConstants.labelRename),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text(AppConstants.labelDelete),
+                                ),
+                              ],
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    ...previewItems.map<Widget>((item) {
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AppConstants.paddingSmall,
+                        ),
+                        child: Text(
+                          '• ${item.text}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color:
+                                item.isCompleted
+                                    ? AppConstants.textColorGrey
+                                    : AppConstants.textColorDark,
+                            decoration:
+                                item.isChecked
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                          ),
+                        ),
+                      );
+                    }),
+                    if (hiddenItemCount > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AppConstants.paddingSmall,
+                        ),
+                        child: Text(
+                          'ほか $hiddenItemCount 件',
+                          style: const TextStyle(
+                            color: AppConstants.textColorGrey,
+                            fontSize: AppConstants.fontSizeSmall,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

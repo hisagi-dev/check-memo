@@ -17,9 +17,11 @@ class MemoSettings {
     bool? moveUncheckedOnComplete,
   }) {
     return MemoSettings(
-      strikeThroughOnCompleted: strikeThroughOnCompleted ?? this.strikeThroughOnCompleted,
+      strikeThroughOnCompleted:
+          strikeThroughOnCompleted ?? this.strikeThroughOnCompleted,
       keepCheckStateOnMove: keepCheckStateOnMove ?? this.keepCheckStateOnMove,
-      moveUncheckedOnComplete: moveUncheckedOnComplete ?? this.moveUncheckedOnComplete,
+      moveUncheckedOnComplete:
+          moveUncheckedOnComplete ?? this.moveUncheckedOnComplete,
     );
   }
 
@@ -44,12 +46,14 @@ class MemoDocument {
   String id;
   String title;
   List items;
+  int? sortOrder;
   MemoSettings? customSettings;
 
   MemoDocument({
     required this.id,
     required this.title,
     required this.items,
+    this.sortOrder,
     this.customSettings,
   });
 
@@ -59,6 +63,7 @@ class MemoDocument {
     return {
       'id': id,
       'title': title,
+      'sortOrder': sortOrder,
       'items': items.map((item) => item.toMap()).toList(),
       'customSettings': customSettings?.toMap(),
     };
@@ -68,13 +73,16 @@ class MemoDocument {
     return MemoDocument(
       id: docId,
       title: map['title'] ?? '',
-      items: (map['items'] as List?)
+      sortOrder: (map['sortOrder'] as num?)?.toInt(),
+      items:
+          (map['items'] as List?)
               ?.map((item) => MemoItem.fromMap(item as Map))
               .toList() ??
           [],
-      customSettings: map['customSettings'] != null
-          ? MemoSettings.fromMap(map['customSettings'] as Map)
-          : null,
+      customSettings:
+          map['customSettings'] != null
+              ? MemoSettings.fromMap(map['customSettings'] as Map)
+              : null,
     );
   }
 }

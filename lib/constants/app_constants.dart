@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AppConstants {
   // --- 数値定数 ---
   static const double homeMemoCardWidth = 178.0;
+  static const int homeMemoMaxPreviewItemCount = 7;
 
   // --- サイズ・レイアウト定数 ---
   static const double gridCrossAxisSpacing = 10.0;

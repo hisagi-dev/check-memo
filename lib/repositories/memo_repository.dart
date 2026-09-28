@@ -6,7 +6,7 @@ class MemoRepository {
   static const String _collectionName = 'memos';
 
   MemoRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // リアルタイムでメモ一覧の変更を監視・取得するStream
   Stream<List<MemoDocument>> getMemosStream() {
@@ -22,6 +22,17 @@ class MemoRepository {
     final docRef = _firestore.collection(_collectionName).doc();
     memo.id = docRef.id;
     await docRef.set(Map.from(memo.toMap()));
+  }
+
+  Future<void> updateMemoOrder(List<MemoDocument> memos) async {
+    final batch = _firestore.batch();
+    for (var index = 0; index < memos.length; index++) {
+      batch.update(
+        _firestore.collection(_collectionName).doc(memos[index].id),
+        {'sortOrder': memos[index].sortOrder},
+      );
+    }
+    await batch.commit();
   }
 
   // メモ帳の更新（タイトル変更、アイテム追加・更新、設定変更等）

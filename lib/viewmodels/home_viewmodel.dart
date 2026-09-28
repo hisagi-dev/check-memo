@@ -5,7 +5,7 @@ import '../repositories/memo_repository.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final MemoRepository _repository;
-  StreamSubscription<List>? _memosSubscription;
+  StreamSubscription<List<MemoDocument>>? _memosSubscription;
 
   MemoSettings globalSettings = MemoSettings(
     strikeThroughOnCompleted: true,
@@ -13,18 +13,27 @@ class HomeViewModel extends ChangeNotifier {
     moveUncheckedOnComplete: false,
   );
 
-  List _memos = [];
-  List get memos => _memos;
+  List<MemoDocument> _memos = [];
+  List<MemoDocument> get memos => _memos;
 
   HomeViewModel({MemoRepository? repository})
-      : _repository = repository ?? MemoRepository() {
+    : _repository = repository ?? MemoRepository() {
     _listenToMemos();
   }
 
   // Firestore のリアルタイム更新を監視
   void _listenToMemos() {
     _memosSubscription = _repository.getMemosStream().listen((memoList) {
-      _memos = memoList;
+      final indexedMemos = memoList.asMap().entries.toList();
+      indexedMemos.sort((first, second) {
+        final firstOrder = first.value.sortOrder ?? first.key;
+        final secondOrder = second.value.sortOrder ?? second.key;
+        final orderComparison = firstOrder.compareTo(secondOrder);
+        return orderComparison != 0
+            ? orderComparison
+            : first.key.compareTo(second.key);
+      });
+      _memos = indexedMemos.map((entry) => entry.value).toList();
       notifyListeners();
     });
   }
@@ -48,12 +57,55 @@ class HomeViewModel extends ChangeNotifier {
 
   Future addMemoDocument(String title) async {
     if (title.trim().isEmpty) return;
+    final sortOrder =
+        _memos.isEmpty
+            ? 0
+            : _memos.indexed
+                    .map((entry) => entry.$2.sortOrder ?? entry.$1)
+                    .reduce(
+                      (first, second) => first < second ? first : second,
+                    ) -
+                1;
     final newDoc = MemoDocument(
       id: '', // リポジトリ側で生成されるため空文字
       title: title.trim(),
       items: [],
+      sortOrder: sortOrder,
     );
     await _repository.addMemoDocument(newDoc);
+  }
+
+  Future<void> reorderMemos(
+    MemoDocument draggedMemo,
+    MemoDocument targetMemo,
+  ) async {
+    final draggedIndex = _memos.indexOf(draggedMemo);
+    final targetIndex = _memos.indexOf(targetMemo);
+    if (draggedIndex < 0 || targetIndex < 0 || draggedIndex == targetIndex) {
+      return;
+    }
+
+    final previousMemos = List<MemoDocument>.from(_memos);
+    final previousOrders = {for (final memo in _memos) memo.id: memo.sortOrder};
+    final reorderedMemos = List<MemoDocument>.from(_memos);
+    final movedMemo = reorderedMemos.removeAt(draggedIndex);
+    reorderedMemos.insert(targetIndex, movedMemo);
+    _memos = reorderedMemos;
+    for (var index = 0; index < _memos.length; index++) {
+      _memos[index].sortOrder = index;
+    }
+    notifyListeners();
+
+    try {
+      await _repository.updateMemoOrder(_memos);
+    } catch (_) {
+      _memos = previousMemos;
+      for (final memo in _memos) {
+        memo.sortOrder = previousOrders[memo.id];
+      }
+      notifyListeners();
+      rethrow;
+    }
   }
 
   Future renameMemoDocument(MemoDocument doc, String newTitle) async {
