@@ -155,7 +155,9 @@ class _HomeScreenState extends State {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppConstants.homeBackgroundColor,
       appBar: AppBar(
+        backgroundColor: AppConstants.homeBackgroundColor,
         title: const Text(AppConstants.homeTitle),
         actions: [
           IconButton(
@@ -178,6 +180,7 @@ class _HomeScreenState extends State {
               itemBuilder: (context, index) {
                 final doc = _viewModel.memos[index];
                 return Card(
+                  color: AppConstants.memoCardColor,
                   elevation: AppConstants.cardElevation,
                   child: InkWell(
                     onTap: () async {

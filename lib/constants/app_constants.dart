@@ -73,6 +73,8 @@ class AppConstants {
 
   // --- 色・スタイリング定数 ---
   static const Color primarySeedColor = Colors.amber;
+  static const Color homeBackgroundColor = Color(0xFFF3F3F3);
+  static const Color memoCardColor = Colors.white;
   static const Color iconColorGrey = Colors.grey;
   static const Color textColorGrey = Colors.grey;
   static const Color textColorDark = Colors.black87;
