@@ -186,7 +186,7 @@ class _HomeScreenState extends State {
                         MaterialPageRoute(
                           builder: (context) => ShoppingMemoHomePage(
                             memoDoc: doc,
-                            homeViewModel: _viewModel,
+                            globalSettings: _viewModel.globalSettings,
                           ),
                         ),
                       );

@@ -2,16 +2,24 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/memo_document.dart';
 import '../models/memo_item.dart';
-import 'home_viewmodel.dart';
 
 class ShoppingMemoViewModel extends ChangeNotifier {
   final MemoDocument memoDoc;
-  final HomeViewModel homeViewModel;
+  final MemoSettings globalSettings;
   final TextEditingController textController = TextEditingController();
 
-  ShoppingMemoViewModel({required this.memoDoc, required this.homeViewModel});
+  ShoppingMemoViewModel({
+    required this.memoDoc,
+    required this.globalSettings,
+  });
 
-  MemoSettings get effectiveSettings => memoDoc.customSettings ?? homeViewModel.globalSettings;
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
+
+  MemoSettings get effectiveSettings => memoDoc.customSettings ?? globalSettings;
 
   bool get strikeThroughOnCompleted => effectiveSettings.strikeThroughOnCompleted;
   bool get keepCheckStateOnMove => effectiveSettings.keepCheckStateOnMove;
@@ -24,9 +32,9 @@ class ShoppingMemoViewModel extends ChangeNotifier {
       memoDoc.customSettings = null;
     } else {
       memoDoc.customSettings = MemoSettings(
-        strikeThroughOnCompleted: homeViewModel.globalSettings.strikeThroughOnCompleted,
-        keepCheckStateOnMove: homeViewModel.globalSettings.keepCheckStateOnMove,
-        moveUncheckedOnComplete: homeViewModel.globalSettings.moveUncheckedOnComplete,
+        strikeThroughOnCompleted: globalSettings.strikeThroughOnCompleted,
+        keepCheckStateOnMove: globalSettings.keepCheckStateOnMove,
+        moveUncheckedOnComplete: globalSettings.moveUncheckedOnComplete,
       );
     }
     notifyListeners();
@@ -39,9 +47,9 @@ class ShoppingMemoViewModel extends ChangeNotifier {
   }) {
     if (memoDoc.customSettings == null) {
       memoDoc.customSettings = MemoSettings(
-        strikeThroughOnCompleted: homeViewModel.globalSettings.strikeThroughOnCompleted,
-        keepCheckStateOnMove: homeViewModel.globalSettings.keepCheckStateOnMove,
-        moveUncheckedOnComplete: homeViewModel.globalSettings.moveUncheckedOnComplete,
+        strikeThroughOnCompleted: globalSettings.strikeThroughOnCompleted,
+        keepCheckStateOnMove: globalSettings.keepCheckStateOnMove,
+        moveUncheckedOnComplete: globalSettings.moveUncheckedOnComplete,
       );
     }
 
@@ -57,9 +65,9 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<MemoItem> get items => memoDoc.items;
-  List<MemoItem> get activeItems => memoDoc.items.where((item) => !item.isCompleted).toList();
-  List<MemoItem> get completedItems => memoDoc.items.where((item) => item.isCompleted).toList();
+  List get items => memoDoc.items;
+  List get activeItems => memoDoc.items.where((item) => !item.isCompleted).toList();
+  List get completedItems => memoDoc.items.where((item) => item.isCompleted).toList();
 
   bool get allChecked => activeItems.isNotEmpty && activeItems.every((i) => i.isChecked);
   bool get allCompletedChecked => completedItems.isNotEmpty && completedItems.every((i) => i.isChecked);

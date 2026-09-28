@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../models/memo_document.dart';
 import '../../viewmodels/shopping_memo_viewmodel.dart';
-import '../../viewmodels/home_viewmodel.dart';
 import 'components/completed_bottom_sheet.dart';
 import 'components/memo_settings_dialog.dart';
 
 class ShoppingMemoHomePage extends StatefulWidget {
   final MemoDocument memoDoc;
-  final HomeViewModel homeViewModel;
+  final MemoSettings globalSettings;
 
   const ShoppingMemoHomePage({
     super.key,
     required this.memoDoc,
-    required this.homeViewModel,
+    required this.globalSettings,
   });
 
   @override
@@ -28,7 +27,7 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
     super.initState();
     _viewModel = ShoppingMemoViewModel(
       memoDoc: widget.memoDoc,
-      homeViewModel: widget.homeViewModel,
+      globalSettings: widget.globalSettings,
     );
     _viewModel.addListener(() => setState(() {}));
   }
