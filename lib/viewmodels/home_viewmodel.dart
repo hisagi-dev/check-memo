@@ -15,6 +15,8 @@ class HomeViewModel extends ChangeNotifier {
 
   List<MemoDocument> _memos = [];
   List<MemoDocument> get memos => _memos;
+  String? _loadError;
+  String? get loadError => _loadError;
 
   HomeViewModel({MemoRepository? repository})
     : _repository = repository ?? MemoRepository() {
@@ -34,6 +36,12 @@ class HomeViewModel extends ChangeNotifier {
             : first.key.compareTo(second.key);
       });
       _memos = indexedMemos.map((entry) => entry.value).toList();
+      _loadError = null;
+      notifyListeners();
+    }, onError: (Object error, StackTrace stackTrace) {
+      _loadError = error.toString();
+      debugPrint('Failed to read memos from Firestore: $error');
+      debugPrintStack(stackTrace: stackTrace);
       notifyListeners();
     });
   }

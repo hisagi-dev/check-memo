@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../constants/app_constants.dart';
@@ -157,10 +158,25 @@ class _HomeScreenState extends State {
   Future<void> _createMemo(String title) async {
     try {
       await _viewModel.addMemoDocument(title);
-    } catch (_) {
+    } on FirebaseException catch (error, stackTrace) {
+      debugPrint(
+        'Firebase memo creation failed: ${error.code}: ${error.message}',
+      );
+      debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('作成できませんでした。通信状態を確認してください。')),
+        SnackBar(
+          content: Text(
+            'Firebase保存エラー (${error.code}): ${error.message ?? '詳細不明'}',
+          ),
+          duration: const Duration(seconds: 8),
+        ),
+      );
+    } catch (_) {
+      debugPrint('Memo creation failed unexpectedly.');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('メモを保存できませんでした。デバッグログを確認してください。')),
       );
     }
   }
@@ -211,8 +227,20 @@ class _HomeScreenState extends State {
           ),
         ],
       ),
-      body:
-          _viewModel.memos.isEmpty
+      body: _viewModel.loadError != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                child: Text(
+                  'Firestoreからメモを読み込めませんでした。\n\n'
+                  '${_viewModel.loadError}\n\n'
+                  'Firebase ConsoleでFirestore Databaseを作成し、'
+                  'アプリと同じプロジェクトを選択してください。',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : _viewModel.memos.isEmpty
               ? const Center(child: Text(AppConstants.textEmptyHome))
               : LayoutBuilder(
                 builder: (context, constraints) {
