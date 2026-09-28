@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../constants/app_constants.dart';
 import '../../../viewmodels/shopping_memo_viewmodel.dart';
 
 class MemoSettingsDialog extends StatelessWidget {
@@ -16,13 +17,13 @@ class MemoSettingsDialog extends StatelessWidget {
         bool move = viewModel.moveUncheckedOnComplete;
 
         return AlertDialog(
-          title: const Text('このメモの設定'),
+          title: const Text(AppConstants.dialogTitleMemoSettings),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SwitchListTile(
-                title: const Text('全体のデフォルト設定に従う'),
-                subtitle: const Text('ONにするとホーム画面の全体設定が自動で反映されます'),
+                title: const Text(AppConstants.settingFollowGlobalTitle),
+                subtitle: const Text(AppConstants.settingFollowGlobalSubtitle),
                 value: followGlobal,
                 onChanged: (bool value) {
                   setDialogState(() {
@@ -36,7 +37,7 @@ class MemoSettingsDialog extends StatelessWidget {
               ),
               const Divider(),
               SwitchListTile(
-                title: const Text('完了済みに取り消し線を引く'),
+                title: const Text(AppConstants.settingStrikeThroughTitle),
                 value: strike,
                 onChanged: followGlobal
                     ? null
@@ -46,7 +47,7 @@ class MemoSettingsDialog extends StatelessWidget {
                       },
               ),
               SwitchListTile(
-                title: const Text('移動時にチェック状態を維持する'),
+                title: const Text(AppConstants.settingKeepCheckTitle),
                 value: keep,
                 onChanged: followGlobal
                     ? null
@@ -56,7 +57,7 @@ class MemoSettingsDialog extends StatelessWidget {
                       },
               ),
               SwitchListTile(
-                title: const Text('未チェックも一括完了で移動する'),
+                title: const Text(AppConstants.settingMoveUncheckedTitle),
                 value: move,
                 onChanged: followGlobal
                     ? null
@@ -70,7 +71,7 @@ class MemoSettingsDialog extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('閉じる'),
+              child: const Text(AppConstants.labelClose),
             ),
           ],
         );

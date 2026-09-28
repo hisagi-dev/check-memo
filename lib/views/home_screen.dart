@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_constants.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../models/memo_document.dart';
 import 'shopping_memo/shopping_memo_home_page.dart';
@@ -7,10 +8,10 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State {
   final HomeViewModel _viewModel = HomeViewModel();
 
   @override
@@ -36,12 +37,12 @@ class _HomeScreenState extends State<HomeScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('全体設定（デフォルト）'),
+              title: const Text(AppConstants.dialogTitleGlobalSettings),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SwitchListTile(
-                    title: const Text('完了済みに取り消し線を引く'),
+                    title: const Text(AppConstants.settingStrikeThroughTitle),
                     value: strike,
                     onChanged: (val) {
                       setDialogState(() => strike = val);
@@ -53,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   SwitchListTile(
-                    title: const Text('移動時にチェック状態を維持する'),
+                    title: const Text(AppConstants.settingKeepCheckTitle),
                     value: keep,
                     onChanged: (val) {
                       setDialogState(() => keep = val);
@@ -65,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   SwitchListTile(
-                    title: const Text('未チェックも一括完了で移動する'),
+                    title: const Text(AppConstants.settingMoveUncheckedTitle),
                     value: move,
                     onChanged: (val) {
                       setDialogState(() => move = val);
@@ -81,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('閉じる'),
+                  child: const Text(AppConstants.labelClose),
                 ),
               ],
             );
@@ -97,23 +98,23 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('新しいメモ帳を作成'),
+          title: const Text(AppConstants.dialogTitleNewMemo),
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: 'メモのタイトル'),
+            decoration: const InputDecoration(hintText: AppConstants.hintMemoTitle),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('キャンセル'),
+              child: const Text(AppConstants.labelCancel),
             ),
             ElevatedButton(
               onPressed: () {
                 _viewModel.addMemoDocument(controller.text);
                 Navigator.pop(context);
               },
-              child: const Text('作成'),
+              child: const Text(AppConstants.labelCreate),
             ),
           ],
         );
@@ -127,23 +128,23 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('メモのタイトルを変更'),
+          title: const Text(AppConstants.dialogTitleRename),
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: '新しいタイトル'),
+            decoration: const InputDecoration(hintText: AppConstants.hintNewMemoTitle),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('キャンセル'),
+              child: const Text(AppConstants.labelCancel),
             ),
             ElevatedButton(
               onPressed: () {
                 _viewModel.renameMemoDocument(doc, controller.text);
                 Navigator.pop(context);
               },
-              child: const Text('保存'),
+              child: const Text(AppConstants.labelSave),
             ),
           ],
         );
@@ -155,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('マイルーム（メモ一覧）'),
+        title: const Text(AppConstants.homeTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -164,20 +165,20 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: _viewModel.memos.isEmpty
-          ? const Center(child: Text('メモ帳がありません。右下の＋から作成してください。'))
+          ? const Center(child: Text(AppConstants.textEmptyHome))
           : GridView.builder(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppConstants.paddingNormal),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 1.1,
+                crossAxisSpacing: AppConstants.gridCrossAxisSpacing,
+                mainAxisSpacing: AppConstants.gridMainAxisSpacing,
+                childAspectRatio: AppConstants.gridChildAspectRatio,
               ),
               itemCount: _viewModel.memos.length,
               itemBuilder: (context, index) {
                 final doc = _viewModel.memos[index];
                 return Card(
-                  elevation: 2,
+                  elevation: AppConstants.cardElevation,
                   child: InkWell(
                     onTap: () async {
                       await Navigator.push(
@@ -192,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {});
                     },
                     child: Padding(
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.all(AppConstants.paddingNormal),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -204,14 +205,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                   doc.title,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: AppConstants.fontSizeNormal,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, size: 18),
+                              PopupMenuButton(
+                                icon: const Icon(
+                                  Icons.more_vert,
+                                  size: AppConstants.iconSizeSmall,
+                                ),
                                 onSelected: (value) {
                                   if (value == 'rename') {
                                     _showRenameDialog(doc);
@@ -222,11 +226,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
                                     value: 'rename',
-                                    child: Text('タイトル変更'),
+                                    child: Text(AppConstants.labelRename),
                                   ),
                                   const PopupMenuItem(
                                     value: 'delete',
-                                    child: Text('削除'),
+                                    child: Text(AppConstants.labelDelete),
                                   ),
                                 ],
                               ),
@@ -236,13 +240,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           Expanded(
                             child: ListView(
                               physics: const NeverScrollableScrollPhysics(),
-                              children: doc.items.take(3).map((item) {
+                              children: doc.items.take(AppConstants.homePreviewItemCount).map((item) {
                                 return Text(
                                   '• ${item.text}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: item.isCompleted ? Colors.grey : Colors.black87,
+                                    color: item.isCompleted
+                                        ? AppConstants.textColorGrey
+                                        : AppConstants.textColorDark,
                                     decoration: item.isChecked ? TextDecoration.lineThrough : null,
                                   ),
                                 );

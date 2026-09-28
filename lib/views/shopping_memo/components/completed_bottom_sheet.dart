@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../constants/app_constants.dart';
 import '../../../viewmodels/shopping_memo_viewmodel.dart';
 
 class CompletedBottomSheet extends StatelessWidget {
@@ -10,11 +11,11 @@ class CompletedBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        color: AppConstants.bottomSheetBgColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppConstants.borderRadiusLarge)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppConstants.shadowColor.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -23,21 +24,27 @@ class CompletedBottomSheet extends StatelessWidget {
       child: InkWell(
         onTap: () => _showCompletedBottomSheetModal(context),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.paddingLarge,
+            vertical: AppConstants.paddingNormal,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.archive_outlined, color: Colors.grey),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.archive_outlined, color: AppConstants.iconColorGrey),
+                  const SizedBox(width: AppConstants.paddingMedium),
                   Text(
                     '完了済み / ストック (${viewModel.completedCount})',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppConstants.textColorGrey,
+                    ),
                   ),
                 ],
               ),
-              const Icon(Icons.keyboard_arrow_up, color: Colors.grey),
+              const Icon(Icons.keyboard_arrow_up, color: AppConstants.iconColorGrey),
             ],
           ),
         ),
@@ -55,30 +62,33 @@ class CompletedBottomSheet extends StatelessWidget {
             final completedItems = viewModel.completedItems;
 
             return DraggableScrollableSheet(
-              initialChildSize: 0.6,
-              minChildSize: 0.3,
-              maxChildSize: 0.95,
+              initialChildSize: AppConstants.bottomSheetInitialSize,
+              minChildSize: AppConstants.bottomSheetMinSize,
+              maxChildSize: AppConstants.bottomSheetMaxSize,
               expand: false,
               builder: (context, scrollController) {
                 return Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
                   child: Column(
                     children: [
                       Container(
-                        width: 40,
-                        height: 4,
+                        width: AppConstants.sheetHandleWidth,
+                        height: AppConstants.sheetHandleHeight,
                         decoration: BoxDecoration(
-                          color: Colors.grey[400],
-                          borderRadius: BorderRadius.circular(2),
+                          color: AppConstants.handleColor,
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppConstants.paddingNormal),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             '完了したアイテム（ストック）',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: AppConstants.fontSizeNormal,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
@@ -88,7 +98,7 @@ class CompletedBottomSheet extends StatelessWidget {
                       ),
                       if (completedItems.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingSmall),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -101,7 +111,10 @@ class CompletedBottomSheet extends StatelessWidget {
                                       setModalState(() {});
                                     },
                                   ),
-                                  const Text('すべて選択', style: TextStyle(fontSize: 14)),
+                                  const Text(
+                                    AppConstants.labelSelectAll,
+                                    style: TextStyle(fontSize: AppConstants.fontSizeSmall),
+                                  ),
                                 ],
                               ),
                               ElevatedButton.icon(
@@ -109,10 +122,13 @@ class CompletedBottomSheet extends StatelessWidget {
                                   viewModel.uncompleteAllCompleted();
                                   setModalState(() {});
                                 },
-                                icon: const Icon(Icons.unarchive_outlined, size: 18),
-                                label: const Text('一括でリストに戻す'),
+                                icon: const Icon(Icons.unarchive_outlined, size: AppConstants.iconSizeSmall),
+                                label: const Text(AppConstants.labelBulkRestore),
                                 style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppConstants.paddingNormal,
+                                    vertical: AppConstants.paddingMedium,
+                                  ),
                                 ),
                               ),
                             ],
@@ -121,7 +137,7 @@ class CompletedBottomSheet extends StatelessWidget {
                       const Divider(),
                       Expanded(
                         child: completedItems.isEmpty
-                            ? const Center(child: Text('アイテムはありません'))
+                            ? const Center(child: Text(AppConstants.textEmptyCompleted))
                             : ReorderableListView.builder(
                                 buildDefaultDragHandles: false,
                                 itemCount: completedItems.length,
@@ -146,7 +162,9 @@ class CompletedBottomSheet extends StatelessWidget {
                                         decoration: (viewModel.strikeThroughOnCompleted && item.isChecked)
                                             ? TextDecoration.lineThrough
                                             : TextDecoration.none,
-                                        color: item.isChecked ? Colors.grey : Colors.black87,
+                                        color: item.isChecked
+                                            ? AppConstants.textColorGrey
+                                            : AppConstants.textColorDark,
                                       ),
                                     ),
                                     trailing: Row(
@@ -157,10 +175,13 @@ class CompletedBottomSheet extends StatelessWidget {
                                             viewModel.uncompleteItem(item);
                                             setModalState(() {});
                                           },
-                                          child: const Text('リストに戻す'),
+                                          child: const Text(AppConstants.labelRestoreToList),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.delete_outline, size: 20),
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            size: AppConstants.iconSizeMedium,
+                                          ),
                                           onPressed: () {
                                             viewModel.deleteItem(item);
                                             setModalState(() {});
@@ -169,8 +190,11 @@ class CompletedBottomSheet extends StatelessWidget {
                                         ReorderableDragStartListener(
                                           index: index,
                                           child: const Padding(
-                                            padding: EdgeInsets.all(4.0),
-                                            child: Icon(Icons.drag_handle, color: Colors.grey),
+                                            padding: EdgeInsets.all(AppConstants.paddingSmall),
+                                            child: Icon(
+                                              Icons.drag_handle,
+                                              color: AppConstants.iconColorGrey,
+                                            ),
                                           ),
                                         ),
                                       ],
