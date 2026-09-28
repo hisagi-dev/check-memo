@@ -17,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State {
   final HomeViewModel _viewModel = HomeViewModel();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -26,6 +27,7 @@ class _HomeScreenState extends State {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _viewModel.dispose();
     super.dispose();
   }
@@ -230,11 +232,55 @@ class _HomeScreenState extends State {
 
   @override
   Widget build(BuildContext context) {
+    final visibleMemos = _viewModel.filteredMemos;
+
     return Scaffold(
       backgroundColor: AppConstants.homeBackgroundColor,
       appBar: AppBar(
         backgroundColor: AppConstants.homeBackgroundColor,
         title: const Text(AppConstants.homeTitle),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(
+            AppConstants.homeSearchBarHeight,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppConstants.paddingNormal,
+              0,
+              AppConstants.paddingNormal,
+              AppConstants.paddingSmall,
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _viewModel.updateSearchQuery,
+              decoration: InputDecoration(
+                hintText: AppConstants.hintSearchMemos,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon:
+                    _viewModel.searchQuery.isEmpty
+                        ? null
+                        : IconButton(
+                          tooltip: AppConstants.labelClearSearch,
+                          onPressed: () {
+                            _searchController.clear();
+                            _viewModel.updateSearchQuery('');
+                          },
+                          icon: const Icon(Icons.clear),
+                        ),
+                filled: true,
+                fillColor: AppConstants.memoCardColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.borderRadiusMedium,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: AppConstants.paddingSmall,
+                ),
+              ),
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -258,6 +304,8 @@ class _HomeScreenState extends State {
               )
               : _viewModel.memos.isEmpty
               ? const Center(child: Text(AppConstants.textEmptyHome))
+              : visibleMemos.isEmpty
+              ? const Center(child: Text(AppConstants.textNoSearchResults))
               : LayoutBuilder(
                 builder: (context, constraints) {
                   final cardWidth = AppConstants.homeMemoCardWidth;
@@ -268,7 +316,7 @@ class _HomeScreenState extends State {
                   final columnCount = ((availableGridWidth + spacing) /
                           (cardWidth + spacing))
                       .floor()
-                      .clamp(1, _viewModel.memos.length);
+                      .clamp(1, visibleMemos.length);
                   final gridWidth =
                       columnCount * cardWidth +
                       (columnCount - 1) * spacing +
@@ -285,9 +333,9 @@ class _HomeScreenState extends State {
                         crossAxisCount: columnCount,
                         mainAxisSpacing: AppConstants.gridMainAxisSpacing,
                         crossAxisSpacing: spacing,
-                        itemCount: _viewModel.memos.length,
+                        itemCount: visibleMemos.length,
                         itemBuilder: (context, index) {
-                          final doc = _viewModel.memos[index];
+                          final doc = visibleMemos[index];
                           return _buildMemoCard(doc, cardWidth);
                         },
                       ),

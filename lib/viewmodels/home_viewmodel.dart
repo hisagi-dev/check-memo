@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/memo_document.dart';
 import '../repositories/memo_repository.dart';
+import '../services/memo_search.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final MemoRepository _repository;
+  final MemoSearch _memoSearch = const MemoSearch();
   StreamSubscription<List<MemoDocument>>? _memosSubscription;
 
   MemoSettings globalSettings = MemoSettings(
@@ -15,6 +17,10 @@ class HomeViewModel extends ChangeNotifier {
 
   List<MemoDocument> _memos = [];
   List<MemoDocument> get memos => _memos;
+  String _searchQuery = '';
+  String get searchQuery => _searchQuery;
+  List<MemoDocument> get filteredMemos =>
+      _memoSearch.filter(_memos, _searchQuery);
   String? _loadError;
   String? get loadError => _loadError;
 
@@ -63,6 +69,12 @@ class HomeViewModel extends ChangeNotifier {
     globalSettings.strikeThroughOnCompleted = strikeThroughOnCompleted;
     globalSettings.keepCheckStateOnMove = keepCheckStateOnMove;
     globalSettings.moveUncheckedOnComplete = moveUncheckedOnComplete;
+    notifyListeners();
+  }
+
+  void updateSearchQuery(String query) {
+    if (_searchQuery == query) return;
+    _searchQuery = query;
     notifyListeners();
   }
 

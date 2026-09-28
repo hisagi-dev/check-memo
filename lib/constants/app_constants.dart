@@ -4,6 +4,7 @@ class AppConstants {
   // --- 数値定数 ---
   static const double homeMemoCardWidth = 184.0;
   static const int homeMemoMaxPreviewItemCount = 7;
+  static const double homeSearchBarHeight = 68.0;
 
   // --- サイズ・レイアウト定数 ---
   static const double gridCrossAxisSpacing = 10.0;
@@ -39,12 +40,14 @@ class AppConstants {
   static const String appTitle = '買い物メモ';
   static const String homeTitle = 'マイルーム（メモ一覧）';
   static const String textEmptyHome = 'メモ帳がありません。右下の＋から作成してください。';
+  static const String textNoSearchResults = '一致するメモがありません';
   static const String textEmptyMemo = 'メモは空です';
   static const String textEmptyCompleted = 'アイテムはありません';
 
   static const String hintAddItem = 'アイテムを追加...';
   static const String hintMemoTitle = 'メモのタイトル';
   static const String hintNewMemoTitle = '新しいタイトル';
+  static const String hintSearchMemos = 'タイトルや項目を検索';
 
   static const String labelAdd = '追加';
   static const String labelSelectAll = 'すべて選択';
@@ -53,6 +56,7 @@ class AppConstants {
   static const String labelRestoreToList = 'リストに戻す';
   static const String labelBulkRestore = '一括でリストに戻す';
   static const String labelClose = '閉じる';
+  static const String labelClearSearch = '検索をクリア';
   static const String labelCancel = 'キャンセル';
   static const String labelCreate = '作成';
   static const String labelSave = '保存';
