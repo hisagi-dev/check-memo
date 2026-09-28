@@ -22,12 +22,28 @@ class MemoSettings {
       moveUncheckedOnComplete: moveUncheckedOnComplete ?? this.moveUncheckedOnComplete,
     );
   }
+
+  Map toMap() {
+    return {
+      'strikeThroughOnCompleted': strikeThroughOnCompleted,
+      'keepCheckStateOnMove': keepCheckStateOnMove,
+      'moveUncheckedOnComplete': moveUncheckedOnComplete,
+    };
+  }
+
+  factory MemoSettings.fromMap(Map map) {
+    return MemoSettings(
+      strikeThroughOnCompleted: map['strikeThroughOnCompleted'] ?? true,
+      keepCheckStateOnMove: map['keepCheckStateOnMove'] ?? false,
+      moveUncheckedOnComplete: map['moveUncheckedOnComplete'] ?? false,
+    );
+  }
 }
 
 class MemoDocument {
   String id;
   String title;
-  List<MemoItem> items;
+  List items;
   MemoSettings? customSettings;
 
   MemoDocument({
@@ -38,4 +54,27 @@ class MemoDocument {
   });
 
   bool get isCustomSettings => customSettings != null;
+
+  Map toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'items': items.map((item) => item.toMap()).toList(),
+      'customSettings': customSettings?.toMap(),
+    };
+  }
+
+  factory MemoDocument.fromMap(Map map, String docId) {
+    return MemoDocument(
+      id: docId,
+      title: map['title'] ?? '',
+      items: (map['items'] as List?)
+              ?.map((item) => MemoItem.fromMap(item as Map))
+              .toList() ??
+          [],
+      customSettings: map['customSettings'] != null
+          ? MemoSettings.fromMap(map['customSettings'] as Map)
+          : null,
+    );
+  }
 }

@@ -240,7 +240,10 @@ class _HomeScreenState extends State {
                           Expanded(
                             child: ListView(
                               physics: const NeverScrollableScrollPhysics(),
-                              children: doc.items.take(AppConstants.homePreviewItemCount).map((item) {
+                              // map に  を明示して List に変換されるように修正
+                              children: doc.items
+                                  .take(AppConstants.homePreviewItemCount)
+                                  .map<Widget>((item) {
                                 return Text(
                                   '• ${item.text}',
                                   maxLines: 1,
@@ -249,7 +252,9 @@ class _HomeScreenState extends State {
                                     color: item.isCompleted
                                         ? AppConstants.textColorGrey
                                         : AppConstants.textColorDark,
-                                    decoration: item.isChecked ? TextDecoration.lineThrough : null,
+                                    decoration: item.isChecked
+                                        ? TextDecoration.lineThrough
+                                        : null,
                                   ),
                                 );
                               }).toList(),

@@ -1,26 +1,39 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/memo_document.dart';
-import '../models/memo_item.dart';
+import '../repositories/memo_repository.dart';
 
 class HomeViewModel extends ChangeNotifier {
+  final MemoRepository _repository;
+  StreamSubscription<List>? _memosSubscription;
+
   MemoSettings globalSettings = MemoSettings(
     strikeThroughOnCompleted: true,
     keepCheckStateOnMove: false,
     moveUncheckedOnComplete: false,
   );
 
-  final List<MemoDocument> _memos = [
-    MemoDocument(
-      id: '1',
-      title: '今日のスーパー',
-      items: [
-        MemoItem(text: '牛乳'),
-        MemoItem(text: '卵', isChecked: true),
-      ],
-    ),
-  ];
+  List _memos = [];
+  List get memos => _memos;
 
-  List<MemoDocument> get memos => _memos;
+  HomeViewModel({MemoRepository? repository})
+      : _repository = repository ?? MemoRepository() {
+    _listenToMemos();
+  }
+
+  // Firestore のリアルタイム更新を監視
+  void _listenToMemos() {
+    _memosSubscription = _repository.getMemosStream().listen((memoList) {
+      _memos = memoList;
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _memosSubscription?.cancel();
+    super.dispose();
+  }
 
   void updateGlobalSettings({
     required bool strikeThroughOnCompleted,
@@ -33,25 +46,23 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addMemoDocument(String title) {
+  Future addMemoDocument(String title) async {
     if (title.trim().isEmpty) return;
     final newDoc = MemoDocument(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: '', // リポジトリ側で生成されるため空文字
       title: title.trim(),
       items: [],
     );
-    _memos.add(newDoc);
-    notifyListeners();
+    await _repository.addMemoDocument(newDoc);
   }
 
-  void renameMemoDocument(MemoDocument doc, String newTitle) {
+  Future renameMemoDocument(MemoDocument doc, String newTitle) async {
     if (newTitle.trim().isEmpty) return;
     doc.title = newTitle.trim();
-    notifyListeners();
+    await _repository.updateMemoDocument(doc);
   }
 
-  void deleteMemoDocument(MemoDocument doc) {
-    _memos.remove(doc);
-    notifyListeners();
+  Future deleteMemoDocument(MemoDocument doc) async {
+    await _repository.deleteMemoDocument(doc.id);
   }
 }

@@ -15,6 +15,10 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+## 🏗 アーキテクチャ構成
+
+本プロジェクトでは、保守性・テスト容易性・拡張性を高めるため、**MVVM（Model-View-ViewModel）パターン** を採用し、単一責任の原則（SRP）に基づいた設計を行っています。
+
 lib/
  ├─ constants/
  │   └─ app_constants.dart      # アプリ共通の文言やサイズ等の定数

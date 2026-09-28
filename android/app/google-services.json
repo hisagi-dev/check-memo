@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505727151968",
+    "project_id": "checklist-memo-app",
+    "storage_bucket": "checklist-memo-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505727151968:android:beec0b9b6144d10e593805",
+        "android_client_info": {
+          "package_name": "com.example.memo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6t5pyTpKiknv5lhz91Q2-EIfOGiEZK48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

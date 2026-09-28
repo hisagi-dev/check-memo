@@ -2,16 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/memo_document.dart';
 import '../models/memo_item.dart';
+import '../repositories/memo_repository.dart';
 
 class ShoppingMemoViewModel extends ChangeNotifier {
   final MemoDocument memoDoc;
   final MemoSettings globalSettings;
+  final MemoRepository _repository;
   final TextEditingController textController = TextEditingController();
 
   ShoppingMemoViewModel({
     required this.memoDoc,
     required this.globalSettings,
-  });
+    MemoRepository? repository,
+  }) : _repository = repository ?? MemoRepository();
 
   @override
   void dispose() {
@@ -27,6 +30,11 @@ class ShoppingMemoViewModel extends ChangeNotifier {
 
   bool get isCustomSettings => memoDoc.customSettings != null;
 
+  void _save() {
+    _repository.updateMemoDocument(memoDoc);
+    notifyListeners();
+  }
+
   void setFollowGlobalSettings(bool followGlobal) {
     if (followGlobal) {
       memoDoc.customSettings = null;
@@ -37,7 +45,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
         moveUncheckedOnComplete: globalSettings.moveUncheckedOnComplete,
       );
     }
-    notifyListeners();
+    _save();
   }
 
   void updateCustomSettingField({
@@ -62,7 +70,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     if (moveUncheckedOnComplete != null) {
       memoDoc.customSettings!.moveUncheckedOnComplete = moveUncheckedOnComplete;
     }
-    notifyListeners();
+    _save();
   }
 
   List get items => memoDoc.items;
@@ -79,17 +87,17 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     if (textController.text.trim().isEmpty) return;
     memoDoc.items.add(MemoItem(text: textController.text.trim()));
     textController.clear();
-    notifyListeners();
+    _save();
   }
 
   void deleteItem(MemoItem item) {
     memoDoc.items.remove(item);
-    notifyListeners();
+    _save();
   }
 
   void toggleItemCheck(MemoItem item, bool? isChecked) {
     item.isChecked = isChecked ?? false;
-    notifyListeners();
+    _save();
   }
 
   void toggleAllCheck(bool? isChecked) {
@@ -97,7 +105,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     for (var item in activeItems) {
       item.isChecked = value;
     }
-    notifyListeners();
+    _save();
   }
 
   void toggleAllCompletedCheck(bool? isChecked) {
@@ -105,7 +113,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     for (var item in completedItems) {
       item.isChecked = value;
     }
-    notifyListeners();
+    _save();
   }
 
   void completeItem(MemoItem item) {
@@ -113,7 +121,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     if (!keepCheckStateOnMove) {
       item.isChecked = false;
     }
-    notifyListeners();
+    _save();
   }
 
   void completeAllActive() {
@@ -125,7 +133,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
         }
       }
     }
-    notifyListeners();
+    _save();
   }
 
   void uncompleteItem(MemoItem item) {
@@ -133,7 +141,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     if (!keepCheckStateOnMove) {
       item.isChecked = false;
     }
-    notifyListeners();
+    _save();
   }
 
   void uncompleteAllCompleted() {
@@ -143,7 +151,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
         item.isChecked = false;
       }
     }
-    notifyListeners();
+    _save();
   }
 
   void reorderActiveItems(int oldIndex, int newIndex) {
@@ -154,7 +162,7 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     final item = list.removeAt(oldIndex);
     list.insert(newIndex, item);
     memoDoc.items = [...list, ...completedItems];
-    notifyListeners();
+    _save();
   }
 
   void reorderCompletedItems(int oldIndex, int newIndex) {
@@ -165,6 +173,6 @@ class ShoppingMemoViewModel extends ChangeNotifier {
     final item = list.removeAt(oldIndex);
     list.insert(newIndex, item);
     memoDoc.items = [...activeItems, ...list];
-    notifyListeners();
+    _save();
   }
 }
