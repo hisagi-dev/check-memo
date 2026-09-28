@@ -48,8 +48,8 @@ class _HomeScreenState extends State {
                   SwitchListTile(
                     title: const Text(AppConstants.settingStrikeThroughTitle),
                     value: strike,
-                    onChanged: (val) {
-                      setDialogState(() => strike = val);
+                    onChanged: (value) {
+                      setDialogState(() => strike = value);
                       _viewModel.updateGlobalSettings(
                         strikeThroughOnCompleted: strike,
                         keepCheckStateOnMove: keep,
@@ -60,8 +60,8 @@ class _HomeScreenState extends State {
                   SwitchListTile(
                     title: const Text(AppConstants.settingKeepCheckTitle),
                     value: keep,
-                    onChanged: (val) {
-                      setDialogState(() => keep = val);
+                    onChanged: (value) {
+                      setDialogState(() => keep = value);
                       _viewModel.updateGlobalSettings(
                         strikeThroughOnCompleted: strike,
                         keepCheckStateOnMove: keep,
@@ -72,8 +72,8 @@ class _HomeScreenState extends State {
                   SwitchListTile(
                     title: const Text(AppConstants.settingMoveUncheckedTitle),
                     value: move,
-                    onChanged: (val) {
-                      setDialogState(() => move = val);
+                    onChanged: (value) {
+                      setDialogState(() => move = value);
                       _viewModel.updateGlobalSettings(
                         strikeThroughOnCompleted: strike,
                         keepCheckStateOnMove: keep,
@@ -141,7 +141,6 @@ class _HomeScreenState extends State {
                       setDialogState(() => errorMessage = 'タイトルを入力してください');
                       return;
                     }
-
                     Navigator.pop(dialogContext);
                     unawaited(_createMemo(title));
                   },
@@ -247,21 +246,36 @@ class _HomeScreenState extends State {
                 builder: (context, constraints) {
                   final cardWidth = AppConstants.homeMemoCardWidth;
                   final spacing = AppConstants.gridCrossAxisSpacing;
-                  final columnCount = ((constraints.maxWidth + spacing) /
+                  final horizontalPadding = AppConstants.paddingNormal * 2;
+                  final availableGridWidth =
+                      constraints.maxWidth - horizontalPadding;
+                  final columnCount = ((availableGridWidth + spacing) /
                           (cardWidth + spacing))
                       .floor()
                       .clamp(1, _viewModel.memos.length);
+                  final gridWidth =
+                      columnCount * cardWidth +
+                      (columnCount - 1) * spacing +
+                      horizontalPadding;
 
-                  return MasonryGridView.count(
-                    padding: const EdgeInsets.all(AppConstants.paddingNormal),
-                    crossAxisCount: columnCount,
-                    mainAxisSpacing: AppConstants.gridMainAxisSpacing,
-                    crossAxisSpacing: spacing,
-                    itemCount: _viewModel.memos.length,
-                    itemBuilder: (context, index) {
-                      final doc = _viewModel.memos[index];
-                      return _buildMemoCard(doc, cardWidth);
-                    },
+                  return Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: gridWidth,
+                      child: MasonryGridView.count(
+                        padding: const EdgeInsets.all(
+                          AppConstants.paddingNormal,
+                        ),
+                        crossAxisCount: columnCount,
+                        mainAxisSpacing: AppConstants.gridMainAxisSpacing,
+                        crossAxisSpacing: spacing,
+                        itemCount: _viewModel.memos.length,
+                        itemBuilder: (context, index) {
+                          final doc = _viewModel.memos[index];
+                          return _buildMemoCard(doc, cardWidth);
+                        },
+                      ),
+                    ),
                   );
                 },
               ),
@@ -339,6 +353,47 @@ class _HomeScreenState extends State {
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                    const Divider(),
+                    ...previewItems.map<Widget>((item) {
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AppConstants.paddingSmall,
+                        ),
+                        child: Text(
+                          '• ${item.text}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color:
+                                item.isCompleted
+                                    ? AppConstants.textColorGrey
+                                    : AppConstants.textColorDark,
+                            decoration:
+                                item.isChecked
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                          ),
+                        ),
+                      );
+                    }),
+                    if (hiddenItemCount > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AppConstants.paddingSmall,
+                        ),
+                        child: Text(
+                          'ほか $hiddenItemCount 件',
+                          style: const TextStyle(
+                            color: AppConstants.textColorGrey,
+                            fontSize: AppConstants.fontSizeSmall,
+                          ),
+                        ),
+                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
                         Draggable<MemoDocument>(
                           data: doc,
                           feedback: Material(
@@ -394,42 +449,6 @@ class _HomeScreenState extends State {
                         ),
                       ],
                     ),
-                    const Divider(),
-                    ...previewItems.map<Widget>((item) {
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppConstants.paddingSmall,
-                        ),
-                        child: Text(
-                          '• ${item.text}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color:
-                                item.isCompleted
-                                    ? AppConstants.textColorGrey
-                                    : AppConstants.textColorDark,
-                            decoration:
-                                item.isChecked
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                          ),
-                        ),
-                      );
-                    }),
-                    if (hiddenItemCount > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppConstants.paddingSmall,
-                        ),
-                        child: Text(
-                          'ほか $hiddenItemCount 件',
-                          style: const TextStyle(
-                            color: AppConstants.textColorGrey,
-                            fontSize: AppConstants.fontSizeSmall,
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),
