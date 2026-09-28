@@ -155,8 +155,9 @@ class _HomeScreenState extends State {
   }
 
   Future<void> _createMemo(String title) async {
+    late final MemoDocument memo;
     try {
-      await _viewModel.addMemoDocument(title);
+      memo = await _viewModel.addMemoDocument(title);
     } on FirebaseException catch (error, stackTrace) {
       debugPrint(
         'Firebase memo creation failed: ${error.code}: ${error.message}',
@@ -171,13 +172,28 @@ class _HomeScreenState extends State {
           duration: const Duration(seconds: 8),
         ),
       );
+      return;
     } catch (_) {
       debugPrint('Memo creation failed unexpectedly.');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('メモを保存できませんでした。デバッグログを確認してください。')),
       );
+      return;
     }
+
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ShoppingMemoHomePage(
+              memoDoc: memo,
+              globalSettings: _viewModel.globalSettings,
+            ),
+      ),
+    );
+    if (mounted) setState(() {});
   }
 
   void _showRenameDialog(MemoDocument doc) {

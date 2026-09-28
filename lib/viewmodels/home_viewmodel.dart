@@ -25,25 +25,28 @@ class HomeViewModel extends ChangeNotifier {
 
   // Firestore のリアルタイム更新を監視
   void _listenToMemos() {
-    _memosSubscription = _repository.getMemosStream().listen((memoList) {
-      final indexedMemos = memoList.asMap().entries.toList();
-      indexedMemos.sort((first, second) {
-        final firstOrder = first.value.sortOrder ?? first.key;
-        final secondOrder = second.value.sortOrder ?? second.key;
-        final orderComparison = firstOrder.compareTo(secondOrder);
-        return orderComparison != 0
-            ? orderComparison
-            : first.key.compareTo(second.key);
-      });
-      _memos = indexedMemos.map((entry) => entry.value).toList();
-      _loadError = null;
-      notifyListeners();
-    }, onError: (Object error, StackTrace stackTrace) {
-      _loadError = error.toString();
-      debugPrint('Failed to read memos from Firestore: $error');
-      debugPrintStack(stackTrace: stackTrace);
-      notifyListeners();
-    });
+    _memosSubscription = _repository.getMemosStream().listen(
+      (memoList) {
+        final indexedMemos = memoList.asMap().entries.toList();
+        indexedMemos.sort((first, second) {
+          final firstOrder = first.value.sortOrder ?? first.key;
+          final secondOrder = second.value.sortOrder ?? second.key;
+          final orderComparison = firstOrder.compareTo(secondOrder);
+          return orderComparison != 0
+              ? orderComparison
+              : first.key.compareTo(second.key);
+        });
+        _memos = indexedMemos.map((entry) => entry.value).toList();
+        _loadError = null;
+        notifyListeners();
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        _loadError = error.toString();
+        debugPrint('Failed to read memos from Firestore: $error');
+        debugPrintStack(stackTrace: stackTrace);
+        notifyListeners();
+      },
+    );
   }
 
   @override
@@ -63,8 +66,10 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future addMemoDocument(String title) async {
-    if (title.trim().isEmpty) return;
+  Future<MemoDocument> addMemoDocument(String title) async {
+    if (title.trim().isEmpty) {
+      throw ArgumentError.value(title, 'title', 'タイトルを入力してください');
+    }
     final sortOrder =
         _memos.isEmpty
             ? 0
@@ -81,6 +86,7 @@ class HomeViewModel extends ChangeNotifier {
       sortOrder: sortOrder,
     );
     await _repository.addMemoDocument(newDoc);
+    return newDoc;
   }
 
   Future<void> reorderMemos(
