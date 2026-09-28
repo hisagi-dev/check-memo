@@ -50,7 +50,9 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
     final activeItems = _viewModel.activeItems;
 
     return Scaffold(
+      backgroundColor: AppConstants.editScreenBackgroundColor,
       appBar: AppBar(
+        backgroundColor: AppConstants.editScreenBackgroundColor,
         title: Text(_viewModel.memoTitle),
         actions: [
           IconButton(
@@ -144,6 +146,7 @@ class _ShoppingMemoHomePageState extends State<ShoppingMemoHomePage> {
                       final item = activeItems[index];
                       return Card(
                         key: ValueKey(item),
+                        color: AppConstants.memoCardColor,
                         margin: const EdgeInsets.symmetric(
                           horizontal: AppConstants.paddingNormal,
                           vertical: AppConstants.paddingSmall,
